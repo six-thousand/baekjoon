@@ -7,61 +7,61 @@ import (
 )
 
 var N int
-var sudoku [][]int
+var array [][]int
 var wr *bufio.Writer
 
-func DFS(row, col int) {
+func sudoku(row, col int) {
+	// 행을 다 채우면 다음 열 시작
 	if col == N {
-		DFS(row+1, 0)
+		sudoku(row+1, 0)
 	}
-
 	if row == N {
-		for _, s := range sudoku {
-			for _, item := range s {
-				fmt.Fprintf(wr, "%d ", item)
+		for i := range array {
+			for j := range array[i] {
+				fmt.Fprintf(wr, "%d ", array[i][j])
 			}
 			fmt.Fprintln(wr)
 		}
 		wr.Flush()
 		os.Exit(0)
-	}
-
-	if sudoku[row][col] == 0 {
-		for i := 1; i <= N; i++ {
-			if possibillity(row, col, i) {
-				sudoku[row][col] = i
-				DFS(row, col+1)
-			}
-		}
-		sudoku[row][col] = 0
 		return
 	}
-
-	DFS(row, col+1)
+	if array[row][col] == 0 {
+		for i := 1; i < N; i++ {
+			if possibillity(row, col, i) {
+				array[row][col] = 1
+				sudoku(row, col+1)
+			}
+		}
+		array[row][col] = 0
+		return
+	}
+	sudoku(row, col+1)
 }
 
 func possibillity(row, col, value int) bool {
 
-	// 같은 행에 있는 원소들 중 겹치는 열 원소가 있는지 검사
+	// 같은 열에 똑같은 값이 있는지 확인
 	for i := 0; i < N; i++ {
-		if sudoku[row][i] == value {
+		if array[row][i] == value {
 			return false
 		}
 	}
 
-	// 같은 열에 있는 원소들 중 겹치는 행 원소가 있는지 검사
+	// 같은 행에 똑같은 값이 있는지 확인
 	for i := 0; i < N; i++ {
-		if sudoku[i][col] == value {
+		if array[i][col] == value {
 			return false
 		}
 	}
 
-	setRow := (row / 3) * 3
-	setCol := (col / 3) * 3
+	// 같은 구역에 똑같은 값이 있는지 확인
+	startSectionRow := row / 3 * 3
+	startSectionCol := col / 3 * 3
 
-	for i := setRow; i < setRow+3; i++ {
-		for j := setCol; j < setCol+3; j++ {
-			if sudoku[i][j] == value {
+	for i := startSectionRow; i < startSectionRow+3; i++ {
+		for j := startSectionCol; j < startSectionCol+3; j++ {
+			if array[i][j] == value {
 				return false
 			}
 		}
@@ -74,14 +74,16 @@ func main() {
 	rd := bufio.NewReader(os.Stdin)
 	wr = bufio.NewWriter(os.Stdout)
 	N = 9
+	defer wr.Flush()
 
-	sudoku = make([][]int, N)
+	array = make([][]int, N)
 
 	for i := 0; i < N; i++ {
-		sudoku[i] = make([]int, N)
+		array[i] = make([]int, N)
 		for j := 0; j < N; j++ {
-			fmt.Fscan(rd, &sudoku[i][j])
+			fmt.Fscan(rd, &array[i][j])
 		}
 	}
-	DFS(0, 0)
+	sudoku(0, 0)
+
 }
